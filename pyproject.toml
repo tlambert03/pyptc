@@ -26,7 +26,10 @@ dynamic = ["version"]
 dependencies = [
     "numpy",
     "pymmcore-plus",
-    "pymmcore-widgets"
+    "pymmcore-widgets",
+    "qdarkstyle",
+    "vispy",
+    "pyside6"
 ]
 
 # extras

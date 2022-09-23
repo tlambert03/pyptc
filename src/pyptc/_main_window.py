@@ -2,11 +2,7 @@ from __future__ import annotations
 
 from pymmcore_widgets import ImagePreview
 from ._widgets import PTCControls
-from qtpy.QtWidgets import (
-    QHBoxLayout,
-    QMainWindow,
-    QWidget
-)
+from qtpy.QtWidgets import QHBoxLayout, QMainWindow, QWidget
 
 
 class MainWindow(QMainWindow):
@@ -25,6 +21,3 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
 
         self.resize(900, 600)
-
-# RuntimeWarning: overflow encountered in ulong_scalars
-#   clim_min = (clim_min - range_min) / (range_max - range_min

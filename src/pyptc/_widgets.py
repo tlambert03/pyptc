@@ -2,7 +2,7 @@ from __future__ import annotations
 import warnings
 
 from pymmcore_plus import CMMCorePlus, Device
-from pymmcore_widgets import LiveButton, SnapButton, ExposureWidget
+from pymmcore_widgets import LiveButton, SnapButton, ExposureWidget, ChannelWidget
 from qtpy.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -28,6 +28,7 @@ class CameraSelector(QWidget):
 
         self._combo = QComboBox()
         self._combo.currentIndexChanged.connect(self._set_camera)
+        self._combo.addItems(self._mmc.getLoadedDevicesOfType(2))  # cameraDevice
 
         self._reload_button = QPushButton("")
         self._reload_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -64,6 +65,7 @@ class  PTCControls(QWidget):
 
         warnings.filterwarnings("ignore", "overflow encountered", RuntimeWarning)
         self.camera_selector = CameraSelector()
+        self.channels = ChannelWidget()
         self.snap_button = SnapButton()
         self.live_button = LiveButton()
         self.exposure = ExposureWidget()
@@ -71,6 +73,7 @@ class  PTCControls(QWidget):
 
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(self.camera_selector)
+        self.layout().addWidget(self.channels)
         self.layout().addWidget(self.exposure)
         self.layout().addWidget(self.histogram)
         self.layout().addWidget(self.snap_button)

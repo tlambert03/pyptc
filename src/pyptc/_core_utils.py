@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING, Callable, Iterator
 
 from loguru import logger
 from pymmcore_plus import CMMCorePlus
 from pymmcore_plus.core import Device, DeviceType
+
+if TYPE_CHECKING:
+    import numpy as np
 
 
 class AvailableDevice:
@@ -69,32 +72,6 @@ class DeviceAdapter:
 
     def __repr__(self) -> str:
         return f"DeviceAdapter({self._adapter_name!r})"
-
-
-# class _Core(CMMCorePlus):
-#     def iterAdapters(self) -> Iterator[DeviceAdapter]:
-#         for adapter_name in self.getDeviceAdapterNames():
-#             yield DeviceAdapter(adapter_name, self)
-
-#     def _iterAvailableCameras(self) -> Iterator[AvailableDevice]:
-#         for adapter in self.iterAdapters():
-#             try:
-#                 yield from adapter.iterAvailableDevices(DeviceType.CameraDevice)
-#             except RuntimeError:
-#                 continue
-
-#     def loadAllCameras(self) -> list[Device]:
-#         already_loaded = self.getLoadedDevicesOfType(DeviceType.CameraDevice)
-#         loaded = []
-#         for camera in self._iterAvailableCameras():
-#             if camera.adapter not in already_loaded:
-#                 try:
-#                     logger.debug(f"Loading camera {camera!r}")
-#                     dev = camera.load()
-#                     loaded.append(dev)
-#                 except RuntimeError:
-#                     continue
-#         return loaded
 
 
 def iter_adapters(core: CMMCorePlus) -> Iterator[DeviceAdapter]:

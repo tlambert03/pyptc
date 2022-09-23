@@ -9,7 +9,7 @@ import numpy as np
 
 
 class PanZoom1DCamera(scene.cameras.PanZoomCamera):
-    def __init__(self, axis: int=1, *args, **kwargs):
+    def __init__(self, axis: int = 1, *args, **kwargs):
         self.axis = axis
         super().__init__(*args, **kwargs)
 
@@ -23,19 +23,21 @@ class PanZoom1DCamera(scene.cameras.PanZoomCamera):
         pan[self.axis] = 0
         self.rect = self.rect + pan
 
+
 AXIS_KWARGS = {
-    'text_color': 'k',
-    'axis_color': 'k',
-    'tick_color': 'k',
-    'tick_width': 1,
-    'tick_font_size': 8,
-    'tick_label_margin': 12,
-    'axis_label_margin': 50,
-    'minor_tick_length': 2,
-    'major_tick_length': 5,
-    'axis_width': 1,
-    'axis_font_size': 9,
+    "text_color": "k",
+    "axis_color": "k",
+    "tick_color": "k",
+    "tick_width": 1,
+    "tick_font_size": 8,
+    "tick_label_margin": 12,
+    "axis_label_margin": 50,
+    "minor_tick_length": 2,
+    "major_tick_length": 5,
+    "axis_width": 1,
+    "axis_font_size": 9,
 }
+
 
 class _PlotWidget(PlotWidget):
     show_yaxis: bool = True
@@ -91,28 +93,24 @@ class _PlotWidget(PlotWidget):
         self.cbar_bottom.height_max = 0
 
         # Y AXIS
-        self.yaxis = scene.AxisWidget(orientation='left', **AXIS_KWARGS)
+        self.yaxis = scene.AxisWidget(orientation="left", **AXIS_KWARGS)
         self.yaxis_widget = self.grid.add_widget(self.yaxis, row=2, col=3)
         if self.show_yaxis:
             self.yaxis_widget.width_max = 30
-            self.ylabel_widget = self.grid.add_widget(
-                self.ylabel, row=2, col=2
-            )
-            # self.ylabel_widget.width_max = 10 if self.ylabel.text else 1 
-            self.ylabel_widget.width_max = 1 
+            self.ylabel_widget = self.grid.add_widget(self.ylabel, row=2, col=2)
+            # self.ylabel_widget.width_max = 10 if self.ylabel.text else 1
+            self.ylabel_widget.width_max = 1
             self.padding_left = self.grid.add_widget(None, row=2, col=0)
             self.padding_left.width_max = 10
         else:
             self.yaxis.visible = False
             self.yaxis.width_max = 1
-            self.padding_left = self.grid.add_widget(
-                None, row=2, col=0, col_span=3
-            )
+            self.padding_left = self.grid.add_widget(None, row=2, col=0, col_span=3)
             self.padding_left.width_max = 5
 
         self.padding_left.width_min = 1
         # X AXIS
-        self.xaxis = scene.AxisWidget(orientation='bottom', **AXIS_KWARGS)
+        self.xaxis = scene.AxisWidget(orientation="bottom", **AXIS_KWARGS)
         self.xaxis_widget = self.grid.add_widget(self.xaxis, row=3, col=4)
         self.xaxis_widget.height_max = 20 if self.show_xaxis else 0
         self.xlabel_widget = self.grid.add_widget(self.xlabel, row=4, col=4)
@@ -120,19 +118,18 @@ class _PlotWidget(PlotWidget):
         self.xlabel_widget.height_max = 0
 
         # VIEWBOX (this has to go last, see vispy #1748)
-        self.view = self.grid.add_view(
-            row=2, col=4, border_color=None, bgcolor=None
-        )
+        self.view = self.grid.add_view(row=2, col=4, border_color=None, bgcolor=None)
 
         if self.lock_axis is not None:
             self.view.camera = PanZoom1DCamera(self.lock_axis)
         else:
-            self.view.camera = 'panzoom'
+            self.view.camera = "panzoom"
         self.camera = self.view.camera
 
         self._configured = True
         self.xaxis.link_view(self.view)
         self.yaxis.link_view(self.view)
+
 
 class HistogramVisual(visuals.MeshVisual):
     """Visual that calculates and displays a histogram of data
@@ -148,6 +145,7 @@ class HistogramVisual(visuals.MeshVisual):
     orientation : {'h', 'v'}
         Orientation of the histogram.
     """
+
     _bins: int
 
     def __init__(self, data, bins=10, color="w", orientation="h"):
@@ -197,6 +195,7 @@ class Histogram(QWidget):
     def __init__(self, data=None, bins=100, parent: QWidget | None = None):
         super().__init__(parent)
         from pymmcore_plus import CMMCorePlus
+
         self._mmc = CMMCorePlus.instance()
         self._mmc.events.imageSnapped.connect(self.set_data)
 
@@ -206,10 +205,7 @@ class Histogram(QWidget):
         self._plot = cast(PlotWidget, self._fig[0, 0])
         self._plot._configure_2d()
 
-        if data is None:
-            data = np.random.rand(100)
-
-        self._hist = HistogramNode(data, bins=bins, color="k")
+        self._hist = HistogramNode(np.zeros((1)), bins=bins, color="k")
         self._plot.view.add(self._hist)
         self._plot.view.camera.set_range(margin=0)
 
@@ -221,18 +217,17 @@ class Histogram(QWidget):
     def set_data(self, data: np.ndarray) -> None:
         self._hist.set_data(data.ravel())
         self.autoscale()
-    
+
     def autoscale(self):
         verts = self._hist._meshdata.get_vertices()
         x0, y0, _ = np.min(verts, axis=0)
         x1, y1, _ = np.max(verts, axis=0)
         self._plot.view.camera.set_range(x=(x0, x1), y=(y0, y1), margin=0)
 
-
     @property
     def bins(self) -> int:
         return self._hist._bins
-    
+
     @bins.setter
     def bins(self, value: int) -> None:
         self._hist._bins = value
