@@ -33,14 +33,14 @@ class AvailableDevice:
                 while device_label + str(i) in taken:
                     i += 1
                 device_label += str(i)
-            
+
         dev = Device(device_label, self.core)
         dev.load(self.adapter, self.device)
         return dev
 
 
 class DeviceAdapter:
-    def __init__(self, adapter_name: str, core: CMMCorePlus = None):
+    def __init__(self, adapter_name: str, core: CMMCorePlus | None = None):
         self._core = core or CMMCorePlus.instance()
         self._adapter_name = adapter_name
 
@@ -70,27 +70,51 @@ class DeviceAdapter:
     def __repr__(self) -> str:
         return f"DeviceAdapter({self._adapter_name!r})"
 
-class _Core(CMMCorePlus):
-    def iterAdapters(self) -> Iterator[DeviceAdapter]:
-        for adapter_name in self.getDeviceAdapterNames():
-            yield DeviceAdapter(adapter_name, self)
 
-    def _iterAvailableCameras(self) -> Iterator[AvailableDevice]:
-        for adapter in self.iterAdapters():
-            try:
-                yield from adapter.iterAvailableDevices(DeviceType.CameraDevice)
-            except RuntimeError:
-                continue
+# class _Core(CMMCorePlus):
+#     def iterAdapters(self) -> Iterator[DeviceAdapter]:
+#         for adapter_name in self.getDeviceAdapterNames():
+#             yield DeviceAdapter(adapter_name, self)
 
-    def loadAllCameras(self) -> list[Device]:
-        already_loaded = self.getLoadedDevicesOfType(DeviceType.CameraDevice)
-        loaded = []
-        for camera in self._iterAvailableCameras():
-            if camera.adapter not in already_loaded:
-                try:
-                    logger.debug(f"Loading camera {camera!r}")
-                    dev = camera.load()
-                    loaded.append(dev)
-                except RuntimeError:
-                    continue
-        return loaded
+#     def _iterAvailableCameras(self) -> Iterator[AvailableDevice]:
+#         for adapter in self.iterAdapters():
+#             try:
+#                 yield from adapter.iterAvailableDevices(DeviceType.CameraDevice)
+#             except RuntimeError:
+#                 continue
+
+#     def loadAllCameras(self) -> list[Device]:
+#         already_loaded = self.getLoadedDevicesOfType(DeviceType.CameraDevice)
+#         loaded = []
+#         for camera in self._iterAvailableCameras():
+#             if camera.adapter not in already_loaded:
+#                 try:
+#                     logger.debug(f"Loading camera {camera!r}")
+#                     dev = camera.load()
+#                     loaded.append(dev)
+#                 except RuntimeError:
+#                     continue
+#         return loaded
+
+
+def iter_adapters(core: CMMCorePlus) -> Iterator[DeviceAdapter]:
+    for adapter_name in core.getDeviceAdapterNames():
+        yield DeviceAdapter(adapter_name, core)
+
+
+def load_all_cameras(core: CMMCorePlus) -> list[Device]:
+    already_loaded = core.getLoadedDevicesOfType(DeviceType.CameraDevice)
+    loaded = [Device(dev, core) for dev in already_loaded]
+    for adapter in iter_adapters(core):
+        try:
+            for camera in adapter.iterAvailableDevices(DeviceType.CameraDevice):
+                if camera.adapter not in already_loaded:
+                    try:
+                        logger.debug(f"Loading camera {camera!r}")
+                        dev = camera.load()
+                        loaded.append(dev)
+                    except RuntimeError:
+                        continue
+        except RuntimeError:
+            continue
+    return loaded

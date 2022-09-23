@@ -37,7 +37,7 @@ def signals_blocked(obj):
 
 
 class MainWindow(QWidget):
-    def __init__(self, viewer: "napari.viewer.Viewer" = None, parent=None) -> None:
+    def __init__(self, viewer = None, parent=None) -> None:
         super().__init__(parent)
         self._viewer = viewer
         self.setLayout(QVBoxLayout())
@@ -163,3 +163,13 @@ class MainWindow(QWidget):
         except RuntimeError as e:
             self._status.setText(str(e))
             QTimer.singleShot(5000, self._status.clear)
+
+if __name__ == "__main__":
+    from napari import Viewer
+    from qtpy.qtwidgets import QApplication
+
+    app = QApplication([])
+    viewer = Viewer()
+    w = MainWindow(viewer)
+    w.show()
+    app.exec_()
